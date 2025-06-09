@@ -3,14 +3,15 @@ import requests
 
 app = Flask(__name__)
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/")
 def index():
-    if request.method == "GET":
-        return render_template("index.html")
-    
-    elif request.method == "POST":
-        search = request.form.get("search")
-        url = f"http://www.rotaryspin.com/mc/api/beatles.php?query={search}"
-        response =requests.get(url)
-        response.raise_for_status()
-        data = response.json()
+
+    return render_template("index.html")
+search = requests("search")
+url = f"http://www.rotaryspin.com/mc/api/beatles.php?query={search}"
+response =requests.get(url)
+response.raise_for_status()
+data = response.json()
+
+if __name__ == "__main__":
+    app.run(debug=True)

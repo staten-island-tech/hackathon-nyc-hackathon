@@ -1,17 +1,12 @@
 from flask import Flask, render_template
-import requests
+import random
 
 app = Flask(__name__)
 
-@app.route("/")
+@app.route('/')
 def index():
+    role = random.choice(['Police', 'Homeless'])
+    return render_template('index.html', role=role)
 
-    return render_template("index.html")
-search = requests("search")
-url = f"http://www.rotaryspin.com/mc/api/beatles.php?query={search}"
-response =requests.get(url)
-response.raise_for_status()
-data = response.json()
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)

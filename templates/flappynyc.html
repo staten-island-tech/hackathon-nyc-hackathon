@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flappy Cop NYC</title>
+  <style>
+    body { margin: 0; background: #87CEEB; overflow: hidden; }
+    canvas { display: block; margin: auto; background: linear-gradient(to top, #d1eaff, #ffa); }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="480" height="640"></canvas>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const gravity = 0.6;
+    const flapStrength = -10;
+    const gap = 150;
+    const buildingWidth = 60;
+    const buildingSpeed = 2;
+
+    let policeY = 150;
+    let policeVelocity = 0;
+    let buildings = [];
+    let score = 0;
+    let gameOver = false;
+
+    const policeImg = new Image();
+    policeImg.src = 'https://i.imgur.com/KhFp7mr.png'; // placeholder police icon
+
+    const structureImgs = [
+      'https://i.imgur.com/yK8mDgF.png', // building 1
+      'https://i.imgur.com/3BZMEZ2.png', // subway
+      'https://i.imgur.com/AiWOBHl.png', // fire hydrant
+    ];
+
+    const structureImageObjects = structureImgs.map(src => {
+      const img = new Image();
+      img.src = src;
+      return img;
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.code === 'ArrowUp') {
+        policeVelocity = flapStrength;
+        if (gameOver) location.reload();
+      }
+    });
+
+    function drawPolice() {
+      ctx.drawImage(policeImg, 80, policeY, 40, 40);
+    }
+
+    function drawBuilding(building) {
+      const img = structureImageObjects[building.imgIndex];
+
+      // Draw top structure
+      ctx.drawImage(img, building.x, 0, buildingWidth, building.top);
+
+      // Draw bottom structure
+      ctx.drawImage(img, building.x, building.top + gap, buildingWidth, canvas.height - building.top - gap);
+    }
+
+    function generateBuilding() {
+      const top = Math.floor(Math.random() * (canvas.height - gap - 100)) + 50;
+      const imgIndex = Math.floor(Math.random() * structureImageObjects.length);
+      buildings.push({ x: canvas.width, top, imgIndex });
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (!gameOver) {
+        policeVelocity += gravity;
+        policeY += policeVelocity;
+
+        if (frames % 100 === 0) generateBuilding();
+
+        for (let i = 0; i < buildings.length; i++) {
+          buildings[i].x -= buildingSpeed;
+
+          drawBuilding(buildings[i]);
+
+          if (
+            buildings[i].x < 120 &&
+            buildings[i].x + buildingWidth > 80 &&
+            (policeY < buildings[i].top || policeY > buildings[i].top + gap)
+          ) {
+            gameOver = true;
+          }
+
+          if (buildings[i].x + buildingWidth === 80) {
+            score++;
+          }
+        }
+
+        // Remove off-screen buildings
+        buildings = buildings.filter(b => b.x + buildingWidth > 0);
+
+        // Hit floor or ceiling
+        if (policeY > canvas.height || policeY < 0) {
+          gameOver = true;
+        }
+      }
+
+      drawPolice();
+
+      ctx.fillStyle = "#000";
+      ctx.font = "24px Arial";
+      ctx.fillText("Score: " + score, 10, 30);
+
+      if (gameOver) {
+        ctx.fillStyle = "red";
+        ctx.font = "40px Arial";
+        ctx.fillText("Game Over", 130, canvas.height / 2);
+        ctx.font = "20px Arial";
+        ctx.fillText("Press SPACE to try again", 120, canvas.height / 2 + 40);
+      }
+
+      frames++;
+      requestAnimationFrame(gameLoop);
+    }
+
+    let frames = 0;
+    generateBuilding();
+    gameLoop();
+  </script>
+</body>
+</html>
